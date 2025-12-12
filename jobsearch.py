@@ -11,7 +11,7 @@ base_url = "https://www.jobsearch.com.au/jobs"
 data = []
 
 # Iterate through pages 1-3
-for page_num in range(1, 3):
+for page_num in range(1, 31):
     if page_num == 1:
         url = base_url
     else:
