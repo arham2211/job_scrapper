@@ -39,6 +39,10 @@ jobs:
         run: |
           python run_scrapers.py
         continue-on-error: false
+        # This runs both scrapers in parallel:
+        # - seek.py: Scrapes 20 pages from Seek
+        # - jobsearch.py: Scrapes 30 pages from JobSearch
+        # Then combines results into CSV with duplicate removal
     
       
       - name: Upload CSV as artifact

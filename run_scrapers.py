@@ -106,6 +106,17 @@ def combine_to_csv():
     # Convert to DataFrame
     df = pd.DataFrame(all_jobs)
     
+    print(f"\nTotal jobs before removing duplicates: {len(df)}")
+    
+    # Remove duplicates
+    df_deduplicated = df.drop_duplicates(
+        keep='first'
+    )
+    
+    duplicates_removed = len(df) - len(df_deduplicated)
+    print(f"Removed {duplicates_removed} duplicate jobs")
+    print(f"Total unique jobs: {len(df_deduplicated)}")
+    
     # Reorder columns for better readability
     column_order = [
         'source',
@@ -121,16 +132,16 @@ def combine_to_csv():
     ]
     
     # Only include columns that exist in the data
-    existing_columns = [col for col in column_order if col in df.columns]
-    df = df[existing_columns]
+    existing_columns = [col for col in column_order if col in df_deduplicated.columns]
+    df_final = df_deduplicated[existing_columns]
     
     # Save to CSV
     output_file = "combined_jobs.csv"
-    df.to_csv(output_file, index=False, encoding='utf-8-sig')
+    df_final.to_csv(output_file, index=False, encoding='utf-8-sig')
     
     print(f"\n✓ Successfully created {output_file}")
     print(f"  Columns: {', '.join(existing_columns)}")
-    print(f"  Total rows: {len(df)}")
+    print(f"  Total rows: {len(df_final)}")
     
     return True
 

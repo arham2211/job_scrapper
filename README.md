@@ -5,7 +5,9 @@ Automated job scraping system that collects job listings from Seek and JobSearch
 ## Features
 
 - 🔄 **Parallel Scraping**: Runs both scrapers simultaneously for faster execution
-- 📊 **Combined Output**: Generates a single CSV file with results from both sources
+- 📄 **Multi-Page Collection**: Scrapes 20 pages from Seek and 30 pages from JobSearch
+- 🔍 **Duplicate Removal**: Automatically removes duplicate job listings
+- 📊 **Combined Output**: Generates a single CSV file with deduplicated results
 - 🤖 **Automated CI/CD**: GitHub Actions workflow runs daily
 - 📁 **Organized Structure**: Separate folders for each source
 
@@ -31,8 +33,8 @@ python run_scrapers.py
 
 The GitHub Actions workflow automatically:
 - Runs daily at 9 AM UTC (2 PM Pakistan time)
-- Scrapes both job sites
-- Commits results to the repository
+- Scrapes 20 pages from Seek and 30 pages from JobSearch in parallel
+- Combines results and removes duplicates
 - Uploads CSV as downloadable artifact
 
 ### Manual Trigger

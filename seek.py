@@ -40,24 +40,38 @@ def extract_job_details(html):
 # MASTER PIPELINE
 # =======================================
 
-LISTING_URL = "https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260"
-# https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260
+BASE_URL = "https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260"
+
 # https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&page=2&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260
+
 driver = Driver(uc=True, headless=True)
-driver.get(LISTING_URL)
-
-time.sleep(5)
-
-# Extract job listing URLs
-elements = driver.find_elements("css selector", "a[data-testid='job-list-item-link-overlay']")
 
 job_urls = []
-for el in elements:
-    href = el.get_attribute("href")
-    if href:
-        job_urls.append(href)
 
-print(f"Found {len(job_urls)} job URLs.")
+# Iterate through pages 1-20
+for page_num in range(1, 3):
+    if page_num == 1:
+        listing_url = BASE_URL
+    else:
+        listing_url = f"{BASE_URL}&page={page_num}"
+    
+    print(f"Scraping page {page_num}/20: {listing_url}")
+    driver.get(listing_url)
+    time.sleep(5)
+    
+    # Extract job listing URLs from current page
+    elements = driver.find_elements("css selector", "a[data-testid='job-list-item-link-overlay']")
+    
+    page_job_urls = []
+    for el in elements:
+        href = el.get_attribute("href")
+        if href:
+            page_job_urls.append(href)
+    
+    job_urls.extend(page_job_urls)
+    print(f"  Found {len(page_job_urls)} job URLs on page {page_num}")
+
+print(f"\nTotal job URLs collected: {len(job_urls)}")
 
 
 # =======================================

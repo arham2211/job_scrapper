@@ -6,40 +6,36 @@ import json
 # Scrape and save HTML
 driver = Driver(uc=True)
 
-url = "https://www.jobsearch.com.au/jobs"
-# https://www.jobsearch.com.au/jobs?page=2
-
-driver.uc_open_with_reconnect(url,4)
-# driver.uc_gui_click_captcha()
-
-time.sleep(7)
-
-# Extract HTML content from the page
-html_content = driver.page_source
-
-# Save HTML to file
-with open('page_content.html', 'w', encoding='utf-8') as f:
-    f.write(html_content)
-
-print("HTML content extracted and saved to page_content.html")
-driver.quit()
-
-# Extract li classes and content using BeautifulSoup
-print("\n--- Extracting LI Elements ---\n")
-
-with open('page_content.html', 'r', encoding='utf-8') as f:
-    html_content = f.read()
-
-soup = BeautifulSoup(html_content, 'html.parser')
-
-# Find li elements with the specific class
-target_class = "group relative bg-white rounded-xl border transition-all duration-300 overflow-hidden cursor-pointer w-full border-gray-200 shadow-sm hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5"
-li_elements = soup.find_all('li', class_=target_class)
-
-print(f"Found {len(li_elements)} li elements with the target class\n")
-
+base_url = "https://www.jobsearch.com.au/jobs"
 # Extract data and prepare JSON
 data = []
+
+# Iterate through pages 1-30
+for page_num in range(1, 3):
+    if page_num == 1:
+        url = base_url
+    else:
+        url = f"{base_url}?page={page_num}"
+    
+    print(f"\nScraping page {page_num}/30: {url}")
+    driver.uc_open_with_reconnect(url, 4)
+    # driver.uc_gui_click_captcha()
+    
+    time.sleep(7)
+    
+    # Extract HTML content from the page
+    html_content = driver.page_source
+    
+    # Extract li classes and content using BeautifulSoup
+    soup = BeautifulSoup(html_content, 'html.parser')
+    
+    # Find li elements with the specific class
+    target_class = "group relative bg-white rounded-xl border transition-all duration-300 overflow-hidden cursor-pointer w-full border-gray-200 shadow-sm hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5"
+    li_elements = soup.find_all('li', class_=target_class)
+    
+    print(f"  Found {len(li_elements)} job listings on page {page_num}")
+    
+    # Extract data from current page
 
 for i, li in enumerate(li_elements, 1):
     # Extract job_id from data-job-id attribute
@@ -111,6 +107,11 @@ for i, li in enumerate(li_elements, 1):
         "url": f"https://www.jobsearch.com.au/job/{job_id}" if job_id else None,
     })
 
+# Close the driver after all pages are scraped
+driver.quit()
+
+print(f"\nTotal jobs collected: {len(data)}")
+
 # Save to JSON file
 import os
 os.makedirs("output/jobsearch", exist_ok=True)
@@ -118,7 +119,6 @@ os.makedirs("output/jobsearch", exist_ok=True)
 with open('output/jobsearch/jobsearch_jobs.json', 'w', encoding='utf-8') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
 
-print(f"\nJSON output saved to output/jobsearch/jobsearch_jobs.json")
-print("\nJSON Preview:")
-print(json.dumps(data, indent=2, ensure_ascii=False))
+print(f"JSON output saved to output/jobsearch/jobsearch_jobs.json")
+
 
