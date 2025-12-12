@@ -1,0 +1,78 @@
+name: Job Scraper CI/CD
+
+on:
+  # Run daily at 9 AM UTC (2 PM Pakistan time)
+  schedule:
+    - cron: '0 9 * * *'
+  
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Set up Chrome and ChromeDriver
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+      
+      - name: Run job scrapers
+        run: |
+          python run_scrapers.py
+        continue-on-error: false
+      
+      - name: Commit and push results
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add output/ combined_jobs.csv
+          git diff --staged --quiet || git commit -m "🤖 Auto-update: Job scraper results $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload CSV as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: job-scraper-results-${{ github.run_number }}
+          path: |
+            combined_jobs.csv
+            output/seek/seek_jobs.json
+            output/jobsearch/jobsearch_jobs.json
+          retention-days: 30
+      
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## 📊 Job Scraper Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "combined_jobs.csv" ]; then
+            TOTAL_JOBS=$(tail -n +2 combined_jobs.csv | wc -l)
+            echo "✅ **Total jobs scraped:** $TOTAL_JOBS" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **No results file generated**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Output Files" >> $GITHUB_STEP_SUMMARY
+          echo "- \`combined_jobs.csv\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`output/seek/seek_jobs.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`output/jobsearch/jobsearch_jobs.json\`" >> $GITHUB_STEP_SUMMARY
