@@ -10,7 +10,7 @@ url = "https://www.jobsearch.com.au/jobs"
 # https://www.jobsearch.com.au/jobs?page=2
 
 driver.uc_open_with_reconnect(url,4)
-driver.uc_gui_click_captcha()
+# driver.uc_gui_click_captcha()
 
 time.sleep(7)
 
