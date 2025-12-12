@@ -36,76 +36,75 @@ for page_num in range(1, 3):
     print(f"  Found {len(li_elements)} job listings on page {page_num}")
     
     # Extract data from current page
+    for i, li in enumerate(li_elements, 1):
+        # Extract job_id from data-job-id attribute
+        job_id = li.get('data-job-id')
+        
+        # Extract span with target class (company name)
+        company_span = li.find('span', class_="font-medium truncate min-w-0")
+        company_name = company_span.get_text(strip=True) if company_span else None
 
-for i, li in enumerate(li_elements, 1):
-    # Extract job_id from data-job-id attribute
-    job_id = li.get('data-job-id')
-    
-    # Extract span with target class (company name)
-    company_span = li.find('span', class_="font-medium truncate min-w-0")
-    company_name = company_span.get_text(strip=True) if company_span else None
+        # Extract h2 with target class (job title)
+        h2 = li.find('h2', class_="text-lg font-semibold transition-colors line-clamp-2 mb-2 break-words text-gray-900 group-hover:text-indigo-600")
+        job_title = h2.get_text(strip=True) if h2 else None
 
-    # Extract h2 with target class (job title)
-    h2 = li.find('h2', class_="text-lg font-semibold transition-colors line-clamp-2 mb-2 break-words text-gray-900 group-hover:text-indigo-600")
-    job_title = h2.get_text(strip=True) if h2 else None
+        # Extract span(s) with class 'truncate' (location candidates)
+        location = None
+        for s in li.find_all('span', class_='truncate'):
+            # Skip the company span if it also contains 'truncate'
+            if company_span is not None and s == company_span:
+                continue
+            classes = s.get('class', [])
+            # Skip spans that are actually company-like (contain font-medium or min-w-0)
+            if 'font-medium' in classes or 'min-w-0' in classes:
+                continue
+            # Prefer spans that are plain 'truncate' (no extra classes)
+            location = s.get_text(strip=True)
+            if location:
+                break
 
-    # Extract span(s) with class 'truncate' (location candidates)
-    location = None
-    for s in li.find_all('span', class_='truncate'):
-        # Skip the company span if it also contains 'truncate'
-        if company_span is not None and s == company_span:
-            continue
-        classes = s.get('class', [])
-        # Skip spans that are actually company-like (contain font-medium or min-w-0)
-        if 'font-medium' in classes or 'min-w-0' in classes:
-            continue
-        # Prefer spans that are plain 'truncate' (no extra classes)
-        location = s.get_text(strip=True)
-        if location:
-            break
+        # Extract span with salary_range class
+        salary_span = li.find('span', class_="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-700 text-xs font-medium border border-gray-200")
+        salary_range = salary_span.get_text(strip=True) if salary_span else None
 
-    # Extract span with salary_range class
-    salary_span = li.find('span', class_="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-700 text-xs font-medium border border-gray-200")
-    salary_range = salary_span.get_text(strip=True) if salary_span else None
+        work=li.find('span', class_="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-100")
+        work_type = work.get_text(strip=True) if work else None
+        # Extract posting_time: first span with no class (skip company and salary spans)
+        posting_time = None
+        for s in li.find_all('span'):
+            if s.get('class') is not None:
+                # has class, skip
+                continue
+            # skip if same as company_span or salary_span
+            if company_span is not None and s == company_span:
+                continue
+            if salary_span is not None and s == salary_span:
+                continue
+            text = s.get_text(separator=' ', strip=True)
+            if text:
+                posting_time = text
+                break
 
-    work=li.find('span', class_="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-100")
-    work_type = work.get_text(strip=True) if work else None
-    # Extract posting_time: first span with no class (skip company and salary spans)
-    posting_time = None
-    for s in li.find_all('span'):
-        if s.get('class') is not None:
-            # has class, skip
-            continue
-        # skip if same as company_span or salary_span
-        if company_span is not None and s == company_span:
-            continue
-        if salary_span is not None and s == salary_span:
-            continue
-        text = s.get_text(separator=' ', strip=True)
-        if text:
-            posting_time = text
-            break
+        # Extract job description div content
+        job_description = None
+        desc_div = li.find('div', class_="space-y-2 text-sm text-gray-700")
+        if desc_div:
+            # Use stripped text; if you prefer HTML, use str(desc_div)
+            job_description = desc_div.get_text(separator=' ', strip=True)
 
-    # Extract job description div content
-    job_description = None
-    desc_div = li.find('div', class_="space-y-2 text-sm text-gray-700")
-    if desc_div:
-        # Use stripped text; if you prefer HTML, use str(desc_div)
-        job_description = desc_div.get_text(separator=' ', strip=True)
-
-    # Add to data list (fixed company field name)
-    data.append({
-        # "id": i,
-        "job_title": job_title,
-        "company_name": company_name,
-        "location": location,
-        "classification": None,
-        "salary_range": salary_range,
-        "work_type": work_type,
-        "posting_time": posting_time,
-        "job_description": job_description,
-        "url": f"https://www.jobsearch.com.au/job/{job_id}" if job_id else None,
-    })
+        # Add to data list (fixed company field name)
+        data.append({
+            # "id": i,
+            "job_title": job_title,
+            "company_name": company_name,
+            "location": location,
+            "classification": None,
+            "salary_range": salary_range,
+            "work_type": work_type,
+            "posting_time": posting_time,
+            "job_description": job_description,
+            "url": f"https://www.jobsearch.com.au/job/{job_id}" if job_id else None,
+        })
 
 # Close the driver after all pages are scraped
 driver.quit()
