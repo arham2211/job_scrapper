@@ -78,6 +78,10 @@ def parse_posted_date(date_text):
     now = datetime.now()
     
     try:
+        if 'yesterday' in text:
+            return (now - timedelta(days=1)).date().isoformat()
+        if 'today' in text:
+            return now.date().isoformat()
         if '30+' in text:
              return (now - timedelta(days=30)).date().isoformat()
              

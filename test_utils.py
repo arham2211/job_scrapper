@@ -24,6 +24,7 @@ def test_date():
     cases = [
         ("Posted 2 days ago", (datetime.now() - timedelta(days=2)).date().isoformat()),
         ("Posted 5 hours ago", datetime.now().date().isoformat()),
+        ("Posted yesterday", (datetime.now() - timedelta(days=1)).date().isoformat()),
         ("30+ days ago", (datetime.now() - timedelta(days=30)).date().isoformat()),
         ("Posted 1w ago", (datetime.now() - timedelta(weeks=1)).date().isoformat()),
     ]

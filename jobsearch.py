@@ -96,11 +96,15 @@ for page_num in range(1, 3):
             parent = element.parent
             
             # Get all text from this parent element, including child elements
-            full_text = parent.get_text(strip=True)
+            # Use separator=" " to avoid "Postedyesterday"
+            full_text = parent.get_text(separator=" ", strip=True)
             
             # Extract just the time part (remove "Posted" and any extra whitespace)
             if "Posted" in full_text:
-                posting_time = full_text.replace("Posted", "Posted").strip()
+                # Ensure "Posted" is separated
+                posting_time = full_text.replace("Posted", "Posted ").strip()
+                # Clean up multiple spaces if any
+                posting_time = " ".join(posting_time.split())
                 break
 
         desc_div = li.find("div", class_="space-y-2 text-sm text-gray-700")
