@@ -100,7 +100,7 @@ for page_num in range(1, 3):
             
             # Extract just the time part (remove "Posted" and any extra whitespace)
             if "Posted" in full_text:
-                posting_time = full_text.replace("Posted", "").strip()
+                posting_time = full_text.replace("Posted", "Posted ").strip()
                 break
 
         desc_div = li.find("div", class_="space-y-2 text-sm text-gray-700")
