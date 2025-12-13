@@ -3,6 +3,7 @@ import time
 from bs4 import BeautifulSoup
 import json
 import os
+from utils import parse_salary, parse_posted_date
 
 driver = Driver(uc=True)
 
@@ -11,7 +12,7 @@ base_url = "https://www.jobsearch.com.au/jobs"
 data = []
 
 # Iterate through pages 1-3
-for page_num in range(1, 31):
+for page_num in range(1, 3):
     if page_num == 1:
         url = base_url
     else:
@@ -63,12 +64,23 @@ for page_num in range(1, 31):
         work_type = work.get_text(strip=True) if work else None
 
         posting_time = None
-        for s in li.find_all("span"):
-            if s.get("class"):
-                continue
-            text = s.get_text(strip=True)
-            if text:
-                posting_time = text
+        # for s in li.find_all("span"):
+        #     if s.get("class"):
+        #         continue
+        #     text = s.get_text(strip=True)
+        #     if text:
+        #         posting_time = text
+        #         break
+        for element in li.find_all(string=lambda text: text and "Posted" in text):
+            # Get the parent element that contains the full text
+            parent = element.parent
+            
+            # Get all text from this parent element, including child elements
+            full_text = parent.get_text(strip=True)
+            
+            # Extract just the time part (remove "Posted" and any extra whitespace)
+            if "Posted" in full_text:
+                posting_time = full_text.replace("Posted", "").strip()
                 break
 
         desc_div = li.find("div", class_="space-y-2 text-sm text-gray-700")
@@ -80,8 +92,11 @@ for page_num in range(1, 31):
             "location": location,
             "classification": None,
             "salary_range": salary_range,
+            "min_annual_salary": parse_salary(salary_range)[0],
+            "max_annual_salary": parse_salary(salary_range)[1],
             "work_type": work_type,
             "posting_time": posting_time,
+            "posted_date": parse_posted_date(posting_time),
             "job_description": job_description,
             "url": f"https://www.jobsearch.com.au/job/{job_id}" if job_id else None,
         })

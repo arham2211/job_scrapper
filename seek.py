@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import json
 import re
+from utils import parse_salary, parse_posted_date
 
 def safe_extract(soup, selector):
     el = soup.find(attrs={"data-automation": selector})
@@ -19,10 +20,12 @@ def extract_job_details(html):
     job["classification"] = safe_extract(soup, "job-detail-classifications")
     job["work_type"] = safe_extract(soup, "job-detail-work-type")
     job["salary_range"] = safe_extract(soup, "job-detail-salary")
+    job["min_annual_salary"], job["max_annual_salary"] = parse_salary(job["salary_range"])
 
     # Posted date (no unique selector)
     posted_tag = soup.find("span", string=re.compile(r"Posted\s+\d+[hdw]"))
     job["posting_time"] = posted_tag.get_text(strip=True) if posted_tag else None
+    job["posted_date"] = parse_posted_date(job["posting_time"])
 
     # Job description
     details_div = soup.find("div", attrs={"data-automation": "jobAdDetails"})
@@ -49,7 +52,7 @@ driver = Driver(uc=True, headless=True)
 job_urls = []
 
 # Iterate through pages 1-20
-for page_num in range(1, 21):
+for page_num in range(1, 3):
     if page_num == 1:
         listing_url = BASE_URL
     else:

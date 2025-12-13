@@ -126,7 +126,10 @@ def combine_to_csv():
         'classification',
         'work_type',
         'salary_range',
+        'min_annual_salary',
+        'max_annual_salary',
         'posting_time',
+        'posted_date',
         'job_description',
         'url'
     ]
