@@ -19,7 +19,27 @@ for page_num in range(1, 3):
         url = f"{base_url}?page={page_num}"
 
     print(f"\nScraping page {page_num}: {url}")
-    driver.uc_open_with_reconnect(url, 4)
+    
+    # Retry mechanism for navigation
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            driver.uc_open_with_reconnect(url, 4)
+            break
+        except Exception as e:
+            print(f"  Attempt {attempt+1}/{max_retries} failed: {e}")
+            if attempt == max_retries - 1:
+                print("  Skipping page due to repeated failures.")
+                continue
+            
+            # Restart driver if needed (some errors might kill it)
+            try:
+                driver.quit()
+            except:
+                pass
+            print("  Restarting driver...")
+            time.sleep(2)
+            driver = Driver(uc=True)  # Re-initialize driver
 
     time.sleep(7)
 
