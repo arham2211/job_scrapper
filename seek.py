@@ -24,17 +24,17 @@ def extract_job_details(html):
 
     # Posted date (no unique selector)
     posted_tag = soup.find("span", string=re.compile(r"Posted\s+\d+[hdw]"))
-    job["posting_time"] = posted_tag.get_text(strip=True) if posted_tag else None
-    job["posted_date"] = parse_posted_date(job["posting_time"])
+    job_post = posted_tag.get_text(strip=True) if posted_tag else None
+    job["posted_date"] = parse_posted_date(job_post)
 
     # Job description
-    details_div = soup.find("div", attrs={"data-automation": "jobAdDetails"})
-    if details_div:
-        text = details_div.get_text("\n", strip=True)
-        lines = [line.strip() for line in text.split("\n") if line.strip()]
-        job["job_description"] = "\n".join(lines)
-    else:
-        job["job_description"] = None
+    # details_div = soup.find("div", attrs={"data-automation": "jobAdDetails"})
+    # if details_div:
+    #     text = details_div.get_text("\n", strip=True)
+    #     lines = [line.strip() for line in text.split("\n") if line.strip()]
+    #     job["job_description"] = "\n".join(lines)
+    # else:
+    #     job["job_description"] = None
 
     return job
 
@@ -52,7 +52,7 @@ driver = Driver(uc=True, headless=True)
 job_urls = []
 
 # Iterate through pages 1-20
-for page_num in range(1, 3):
+for page_num in range(1, 21):
     if page_num == 1:
         listing_url = BASE_URL
     else:

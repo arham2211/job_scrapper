@@ -12,7 +12,7 @@ base_url = "https://www.jobsearch.com.au/jobs"
 data = []
 
 # Iterate through pages 1-3
-for page_num in range(1, 3):
+for page_num in range(1, 31):
     if page_num == 1:
         url = base_url
     else:
@@ -119,9 +119,9 @@ for page_num in range(1, 3):
             "min_annual_salary": parse_salary(salary_range)[0],
             "max_annual_salary": parse_salary(salary_range)[1],
             "work_type": work_type,
-            "posting_time": posting_time,
+            # "posting_time": posting_time,
             "posted_date": parse_posted_date(posting_time),
-            "job_description": job_description,
+            # "job_description": job_description,
             "url": f"https://www.jobsearch.com.au/job/{job_id}" if job_id else None,
         })
 
