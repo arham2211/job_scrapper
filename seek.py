@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import json
 import re
-from utils import parse_salary, parse_posted_date
+from utils import parse_salary, parse_posted_date, parse_location
 
 def safe_extract(soup, selector):
     el = soup.find(attrs={"data-automation": selector})
@@ -20,7 +20,26 @@ def extract_job_details(html):
     job["classification"] = safe_extract(soup, "job-detail-classifications")
     job["work_type"] = safe_extract(soup, "job-detail-work-type")
     job["salary_range"] = safe_extract(soup, "job-detail-salary")
+    job["salary_range"] = safe_extract(soup, "job-detail-salary")
     job["min_annual_salary"], job["max_annual_salary"] = parse_salary(job["salary_range"])
+
+    # Location Analysis
+    raw_location = job["location"]
+    is_remote = False
+    is_hybrid = False
+    
+    if raw_location:
+         if "(Remote)" in raw_location:
+             is_remote = True
+         if "(Hybrid)" in raw_location:
+             is_hybrid = True
+    
+    loc_data = parse_location(raw_location)
+    job["city"] = loc_data["city"]
+    job["state"] = loc_data["state"] # type: ignore
+    job["country"] = loc_data["country"]
+    job["is_remote"] = is_remote
+    job["is_hybrid"] = is_hybrid
 
     # Posted date (no unique selector)
     posted_tag = soup.find("span", string=re.compile(r"Posted\s+\d+[hdw]"))
@@ -28,13 +47,13 @@ def extract_job_details(html):
     job["posted_date"] = parse_posted_date(job_post)
 
     # Job description
-    # details_div = soup.find("div", attrs={"data-automation": "jobAdDetails"})
-    # if details_div:
-    #     text = details_div.get_text("\n", strip=True)
-    #     lines = [line.strip() for line in text.split("\n") if line.strip()]
-    #     job["job_description"] = "\n".join(lines)
-    # else:
-    #     job["job_description"] = None
+    details_div = soup.find("div", attrs={"data-automation": "jobAdDetails"})
+    if details_div:
+        text = details_div.get_text("\n", strip=True)
+        lines = [line.strip() for line in text.split("\n") if line.strip()]
+        job["job_description"] = "\n".join(lines)
+    else:
+        job["job_description"] = None
 
     return job
 
@@ -45,14 +64,12 @@ def extract_job_details(html):
 
 BASE_URL = "https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260"
 
-# https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&page=2&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260
-
 driver = Driver(uc=True, headless=True)
 
 job_urls = []
 
 # Iterate through pages 1-20
-for page_num in range(1, 21):
+for page_num in range(1, 10):
     if page_num == 1:
         listing_url = BASE_URL
     else:

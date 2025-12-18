@@ -111,3 +111,57 @@ def parse_posted_date(date_text):
         pass
         
     return None
+
+def parse_location(location_str):
+    """
+    Parses a location string into city, state, and country.
+    Default country is "Australia".
+    Wrapper for handling cases like "Toowong, Brisbane QLD(Hybrid)".
+    Returns a dict with city, state, country.
+    """
+    if not location_str:
+        return {"city": None, "state": None, "country": "Australia"}
+
+    # Clean up brackets like (Hybrid), (Remote) which we handle separately
+    clean_loc = re.sub(r'\(.*?\)', '', location_str).strip()
+    
+    parts = [p.strip() for p in clean_loc.split(',')]
+    
+    city = None
+    state = None
+    country = "Australia"
+    
+    if len(parts) == 1:
+        # Check if it looks like "Brisbane QLD"
+        match = re.search(r'^(.*?)\s+([A-Z]{2,3})$', parts[0])
+        if match:
+            city = match.group(1).strip()
+            state = match.group(2).strip()
+        else:
+            # Just city or state? Assume city for now if no state code found
+            city = parts[0]
+            
+    elif len(parts) >= 2:
+        # "Toowong, Brisbane QLD"
+        # Last part usually has state
+        last_part = parts[-1]
+        match = re.search(r'^(.*?)\s+([A-Z]{2,3})$', last_part)
+        if match:
+            # "Brisbane QLD" -> City could be Toowong, State QLD. 
+            # Or City Brisbane, State QLD? 
+            # Usually "Suburb, City State" or "City, State"
+            state = match.group(2).strip()
+            # If the last part had a city too ("Brisbane QLD"), maybe join with previous?
+            # Let's take the first part as city/suburb
+            city = parts[0]
+        else:
+            # Maybe just "City, State"?
+            if re.match(r'^[A-Z]{2,3}$', last_part):
+                state = last_part
+                city = parts[0]
+            else:
+                 # Fallback
+                 city = parts[0]
+                 state = parts[-1]
+
+    return {"city": city, "state": state, "country": country}

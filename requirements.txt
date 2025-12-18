@@ -83,3 +83,6 @@
 pandas
 seleniumbase
 bs4
+sqlalchemy
+dotenv
+psycopg2-binary

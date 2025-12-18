@@ -65,7 +65,7 @@ for i, div in enumerate(job_containers, 1):
     company_name = ""
     location = ""
     salary_range = ""
-    posting_time = ""
+    # posting_time = ""
     job_description = ""
 
     h2_title = div.find('h2', class_="text-title-1 text-black text-break leading-6 mb-2")
@@ -84,8 +84,8 @@ for i, div in enumerate(job_containers, 1):
         a_tag = location_div.find('a')
         if a_tag:
             location = a_tag.get_text(strip=True)
-        else:
-            posting_time= location_div.get_text(strip=True)
+        # else:
+        #     posting_time= location_div.get_text(strip=True)
 
     salary_div = div.find('div', class_="text-body-4 text-black d-flex align-items-center")
     if salary_div:
@@ -99,7 +99,15 @@ for i, div in enumerate(job_containers, 1):
         "company_name": company_name,
         "location": location,
         "salary_range": salary_range,
-        "posting_time": posting_time,
+        # "posting_time": posting_time,
+        "salary_range": salary_range,
+        # "posting_time": posting_time,
+        "posted_date": None, # Will be updated in second loop
+        "city": parse_location(location)["city"],
+        "state": parse_location(location)["state"],
+        "country": parse_location(location)["country"],
+        "is_remote": False, # Default
+        "is_hybrid": False, # Default
         "job_description": job_description,
     })
 
@@ -113,7 +121,7 @@ for i, div in enumerate(posting_containers, 1):
         posting_time = posting_time_div.get_text(strip=True)
 
         # update existing entry
-        data[i-1]["posting_time"] = posting_time
+        data[i-1]["posted_date"] = parse_posted_date(posting_time)
 
 # ------------- THIRD LOOP: Update Job_description ---------------
 job_descrip_containers = soup.find_all('div', class_="d-block cursor-pointer")

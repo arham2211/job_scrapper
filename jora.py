@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 import time
 import re
+from utils import parse_posted_date, parse_location
 
 
 def extract_badges(soup):
@@ -59,7 +60,15 @@ def parse_new_site(html):
 
     # Location
     location_el = soup.find("span", class_="location")
-    job["location"] = location_el.get_text(strip=True) if location_el else None
+    raw_location = location_el.get_text(strip=True) if location_el else None
+    job["location"] = raw_location
+    
+    loc_data = parse_location(raw_location)
+    job["city"] = loc_data["city"]
+    job["state"] = loc_data["state"]
+    job["country"] = loc_data["country"]
+    job["is_remote"] = False
+    job["is_hybrid"] = False
 
 
     salary, work_types = extract_badges(soup)
@@ -70,7 +79,8 @@ def parse_new_site(html):
 
     # Posted date
     posted_el = soup.select_one("#job-meta .listed-date")
-    job["posted"] = posted_el.get_text(strip=True) if posted_el else None
+    raw_posted = posted_el.get_text(strip=True) if posted_el else None
+    job["posted_date"] = parse_posted_date(raw_posted)
 
     # FULL job description
     desc_container = soup.find("div", id="job-description-container")

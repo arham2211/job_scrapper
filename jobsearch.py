@@ -3,20 +3,40 @@ import time
 from bs4 import BeautifulSoup
 import json
 import os
-from utils import parse_salary, parse_posted_date
+from utils import parse_salary, parse_posted_date, parse_location
+import re
 
 driver = Driver(uc=True)
 
 base_url = "https://www.jobsearch.com.au/jobs"
-
+base_url_2 = "https://www.jobsearch.com.au/jobs?q=remote"
+base_url_3 = "https://www.jobsearch.com.au/jobs?q=hybrid"
 data = []
 
-# Iterate through pages 1-3
-for page_num in range(1, 31):
-    if page_num == 1:
-        url = base_url
-    else:
-        url = f"{base_url}?page={page_num}"
+# Determine scan configurations
+scans = [
+    {"base": base_url},
+    {"base": base_url_2},
+    {"base": base_url_3}
+]
+
+# Iterate through scan configs
+for scan in scans:
+    current_base = scan["base"]
+    
+    print(f"\n--- Starting scan for base URL: {current_base} ---")
+
+    # Iterate through pages 1-2 (for testing, or 1-3 etc)
+    for page_num in range(1, 10):
+        # Handle pagination for URLs that might already have query params
+        separator = "&" if "?" in current_base else "?"
+        
+        if page_num == 1:
+            url = current_base
+        else:
+            url = f"{current_base}{separator}page={page_num}"
+        
+    
 
     print(f"\nScraping page {page_num}: {url}")
     
@@ -106,6 +126,18 @@ for page_num in range(1, 31):
                 # Clean up multiple spaces if any
                 posting_time = " ".join(posting_time.split())
                 break
+                
+        # Remote/Hybrid Detection
+        is_remote = False
+        is_hybrid = False
+        
+        title_lower = job_title.lower() if job_title else ""
+        if "remote" in title_lower:
+            is_remote = True
+        if "hybrid" in title_lower:
+            is_hybrid = True
+            
+        loc_data = parse_location(location)
 
         desc_div = li.find("div", class_="space-y-2 text-sm text-gray-700")
         job_description = desc_div.get_text(separator=" ", strip=True) if desc_div else None
@@ -114,6 +146,11 @@ for page_num in range(1, 31):
             "job_title": job_title,
             "company_name": company_name,
             "location": location,
+            "city": loc_data["city"],
+            "state": loc_data["state"],
+            "country": loc_data["country"],
+            "is_remote": is_remote,
+            "is_hybrid": is_hybrid,
             "classification": None,
             "salary_range": salary_range,
             "min_annual_salary": parse_salary(salary_range)[0],
@@ -121,7 +158,7 @@ for page_num in range(1, 31):
             "work_type": work_type,
             # "posting_time": posting_time,
             "posted_date": parse_posted_date(posting_time),
-            # "job_description": job_description,
+            "job_description": job_description,
             "url": f"https://www.jobsearch.com.au/job/{job_id}" if job_id else None,
         })
 
