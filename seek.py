@@ -69,7 +69,7 @@ driver = Driver(uc=True, headless=True)
 job_urls = []
 
 # Iterate through pages 1-20
-for page_num in range(1, 10):
+for page_num in range(1, 2):
     if page_num == 1:
         listing_url = BASE_URL
     else:

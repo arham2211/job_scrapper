@@ -1,12 +1,14 @@
 """
 Parallel Job Scraper Runner
 
-This script runs both seek.py and jobsearch.py in parallel using multiprocessing,
+This script runs seek.py, jobsearch.py, jora.py, and career.py in parallel using multiprocessing,
 then combines their JSON outputs into a single CSV file.
 
 Directory Structure:
 - output/seek/seek_jobs.json
 - output/jobsearch/jobsearch_jobs.json
+- output/jora/jora_jobs.json
+- output/career/career_jobs.json
 - combined_jobs.csv (root directory)
 """
 
@@ -59,6 +61,46 @@ def run_jobsearch_scraper():
         return False
 
 
+def run_jora_scraper():
+    """Run the Jora scraper"""
+    print("\n[JORA] Starting Jora scraper...")
+    try:
+        result = subprocess.run(
+            [sys.executable, "jora.py"],
+            cwd=os.getcwd(),
+            capture_output=True,
+            text=True
+        )
+        print(f"[JORA] {result.stdout}")
+        if result.stderr:
+            print(f"[JORA ERROR] {result.stderr}")
+        print("[JORA] Completed!")
+        return result.returncode == 0
+    except Exception as e:
+        print(f"[JORA ERROR] Failed to run: {e}")
+        return False
+
+
+def run_career_scraper():
+    """Run the CareerOne scraper"""
+    print("\n[CAREER] Starting CareerOne scraper...")
+    try:
+        result = subprocess.run(
+            [sys.executable, "career.py"],
+            cwd=os.getcwd(),
+            capture_output=True,
+            text=True
+        )
+        print(f"[CAREER] {result.stdout}")
+        if result.stderr:
+            print(f"[CAREER ERROR] {result.stderr}")
+        print("[CAREER] Completed!")
+        return result.returncode == 0
+    except Exception as e:
+        print(f"[CAREER ERROR] Failed to run: {e}")
+        return False
+
+
 def load_json_file(filepath):
     """Load JSON file and return data, or empty list if file doesn't exist"""
     try:
@@ -76,14 +118,16 @@ def load_json_file(filepath):
 
 
 def combine_to_csv():
-    """Combine JSON files from both scrapers into a single CSV"""
+    """Combine JSON files from all scrapers into a single CSV"""
     print("\n" + "="*60)
     print("COMBINING RESULTS INTO CSV")
     print("="*60)
     
-    # Load data from both sources
+    # Load data from all sources
     seek_data = load_json_file("output/seek/seek_jobs.json")
     jobsearch_data = load_json_file("output/jobsearch/jobsearch_jobs.json")
+    jora_data = load_json_file("output/jora/jora_jobs.json")
+    career_data = load_json_file("output/career/career_jobs.json")
     
     # Add source column to identify where each job came from
     for job in seek_data:
@@ -91,9 +135,15 @@ def combine_to_csv():
     
     for job in jobsearch_data:
         job['source'] = 'jobsearch'
+
+    for job in jora_data:
+        job['source'] = 'jora'
+
+    for job in career_data:
+        job['source'] = 'careerone'
     
     # Combine all jobs
-    all_jobs = seek_data + jobsearch_data
+    all_jobs = seek_data + jobsearch_data + jora_data + career_data
     
     if not all_jobs:
         print("⚠ No jobs found to combine!")
@@ -102,14 +152,20 @@ def combine_to_csv():
     print(f"\nTotal jobs collected: {len(all_jobs)}")
     print(f"  - Seek: {len(seek_data)}")
     print(f"  - JobSearch: {len(jobsearch_data)}")
+    print(f"  - Jora: {len(jora_data)}")
+    print(f"  - CareerOne: {len(career_data)}")
     
     # Convert to DataFrame
     df = pd.DataFrame(all_jobs)
     
     print(f"\nTotal jobs before removing duplicates: {len(df)}")
     
+    # Identify columns to check for duplicates (all except job_description)
+    cols_to_check = [col for col in df.columns if col != 'job_description']
+    
     # Remove duplicates
     df_deduplicated = df.drop_duplicates(
+        subset=cols_to_check,
         keep='first'
     )
     
@@ -163,23 +219,31 @@ def main():
     # Ensure output directories exist
     os.makedirs("output/seek", exist_ok=True)
     os.makedirs("output/jobsearch", exist_ok=True)
+    os.makedirs("output/jora", exist_ok=True)
+    os.makedirs("output/career", exist_ok=True)
     
     # Create processes for parallel execution
     seek_process = multiprocessing.Process(target=run_seek_scraper)
     jobsearch_process = multiprocessing.Process(target=run_jobsearch_scraper)
+    jora_process = multiprocessing.Process(target=run_jora_scraper)
+    career_process = multiprocessing.Process(target=run_career_scraper)
     
-    # Start both scrapers in parallel
-    print("\nStarting both scrapers in parallel...")
+    # Start all scrapers in parallel
+    print("\nStarting all scrapers in parallel...")
     seek_process.start()
     jobsearch_process.start()
+    jora_process.start()
+    career_process.start()
     
-    # Wait for both to complete
+    # Wait for all to complete
     print("\nWaiting for scrapers to complete...")
     seek_process.join()
     jobsearch_process.join()
+    jora_process.join()
+    career_process.join()
     
     print("\n" + "="*60)
-    print("BOTH SCRAPERS COMPLETED")
+    print("ALL SCRAPERS COMPLETED")
     print("="*60)
     
     # Combine results into CSV
@@ -192,6 +256,8 @@ def main():
         print("\nOutput files:")
         print("  - output/seek/seek_jobs.json")
         print("  - output/jobsearch/jobsearch_jobs.json")
+        print("  - output/jora/jora_jobs.json")
+        print("  - output/career/career_jobs.json")
         print("  - combined_jobs.csv")
     else:
         print("\n⚠ Warning: CSV generation had issues. Check the logs above.")

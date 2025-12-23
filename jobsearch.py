@@ -27,7 +27,7 @@ for scan in scans:
     print(f"\n--- Starting scan for base URL: {current_base} ---")
 
     # Iterate through pages 1-2 (for testing, or 1-3 etc)
-    for page_num in range(1, 10):
+    for page_num in range(1, 2):
         # Handle pagination for URLs that might already have query params
         separator = "&" if "?" in current_base else "?"
         
