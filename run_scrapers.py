@@ -160,12 +160,8 @@ def combine_to_csv():
     
     print(f"\nTotal jobs before removing duplicates: {len(df)}")
     
-    # Identify columns to check for duplicates (all except job_description)
-    cols_to_check = [col for col in df.columns if col != 'job_description']
-    
     # Remove duplicates
     df_deduplicated = df.drop_duplicates(
-        subset=cols_to_check,
         keep='first'
     )
     

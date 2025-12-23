@@ -54,5 +54,7 @@ jobs:
             combined_jobs.csv
             output/seek/seek_jobs.json
             output/jobsearch/jobsearch_jobs.json
+            output/jora/jora_jobs.json
+            output/career/career_jobs.json
           retention-days: 30
       

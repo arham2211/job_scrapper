@@ -99,13 +99,8 @@ def parse_career_jobs(html):
         job["max_annual_salary"] = max_sal
 
         # Description / Key Points
-        # Often in a UL
-        desc_ul = card.select_one("ul")
-        if desc_ul:
-            points = [li.get_text(strip=True) for li in desc_ul.find_all("li")]
-            job["job_description"] = "; ".join(points)
-        else:
-            job["job_description"] = None
+        # Updated via second loop below
+        job["job_description"] = None
         
         # Work Type
         # Often a badge or text
@@ -119,10 +114,9 @@ def parse_career_jobs(html):
         
         job["work_type"] = work_type
         
-        # Remote/Hybrid - Check TITLE ONLY as requested
-        title_lower = (job["job_title"] or "").lower()
-        job["is_remote"] = "remote" in title_lower
-        job["is_hybrid"] = "hybrid" in title_lower
+        # Remote/Hybrid
+        job["is_remote"] = "remote" in all_text
+        job["is_hybrid"] = "hybrid" in all_text
         
         job["classification"] = None 
 
@@ -133,6 +127,22 @@ def parse_career_jobs(html):
         job["posted_date"] = parse_posted_date(raw_posted)
         
         parsed_jobs.append(job)
+        
+    # ------------- SECOND LOOP: Update Job_description ---------------
+    job_descrip_containers = soup.find_all('div', class_="d-block cursor-pointer")
+
+    for i, div in enumerate(job_descrip_containers, 1):
+        # Find the <ul> inside this div
+        ul_tag = div.find('ul')
+        if ul_tag:
+            # Extract all <li> text
+            key_points = [li.get_text(strip=True) for li in ul_tag.find_all('li')]
+            # Join as single string or keep as list
+            key_points_text = "; ".join(key_points)
+
+            # Update existing entry
+            if i-1 < len(parsed_jobs):  # safety check
+                parsed_jobs[i-1]["job_description"] = key_points_text
         
     return parsed_jobs
 
