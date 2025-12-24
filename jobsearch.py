@@ -149,7 +149,7 @@ for scan in scans:
                 "country": loc_data["country"],
                 "is_remote": is_remote,
                 "is_hybrid": is_hybrid,
-                "classification": None,
+                # "classification": None, # REMOVED
                 "salary_range": salary_range,
                 "min_annual_salary": parse_salary(salary_range)[0],
                 "max_annual_salary": parse_salary(salary_range)[1],

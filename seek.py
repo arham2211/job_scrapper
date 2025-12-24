@@ -17,7 +17,7 @@ def extract_job_details(html):
     job["job_title"] = safe_extract(soup, "job-detail-title")
     job["company_name"] = safe_extract(soup, "advertiser-name")
     job["location"] = safe_extract(soup, "job-detail-location")
-    job["classification"] = safe_extract(soup, "job-detail-classifications")
+    # job["classification"] = safe_extract(soup, "job-detail-classifications") # REMOVED
     job["work_type"] = safe_extract(soup, "job-detail-work-type")
     job["salary_range"] = safe_extract(soup, "job-detail-salary")
     job["salary_range"] = safe_extract(soup, "job-detail-salary")

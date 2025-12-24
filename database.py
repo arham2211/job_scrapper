@@ -39,7 +39,7 @@ class Job(Base):
     country = Column(String, default="Australia")
     is_remote = Column(Boolean, default=False)
     is_hybrid = Column(Boolean, default=False)
-    classification = Column(String, nullable=True)
+    # classification = Column(String, nullable=True) # REMOVED
     work_type = Column(String, nullable=True)
     salary_range = Column(String, nullable=True)
     min_annual_salary = Column(Float, nullable=True)

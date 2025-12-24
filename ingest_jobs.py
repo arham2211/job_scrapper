@@ -94,7 +94,7 @@ def ingest_data():
                 'country': job_data.get('country'),
                 'is_remote': job_data.get('is_remote', False),
                 'is_hybrid': job_data.get('is_hybrid', False),
-                'classification': job_data.get('classification'),
+                # 'classification': job_data.get('classification'), # REMOVED
                 'work_type': job_data.get('work_type'),
                 'salary_range': job_data.get('salary_range'),
                 'min_annual_salary': float(min_salary) if min_salary else None,

@@ -180,7 +180,7 @@ def combine_to_csv():
         'country',
         'is_remote',
         'is_hybrid',
-        'classification',
+        # 'classification', # REMOVED
         'work_type',
         'salary_range',
         'min_annual_salary',

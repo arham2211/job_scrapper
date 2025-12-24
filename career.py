@@ -118,7 +118,7 @@ def parse_career_jobs(html):
         job["is_remote"] = "remote" in all_text
         job["is_hybrid"] = "hybrid" in all_text
         
-        job["classification"] = None 
+        # job["classification"] = None # REMOVED 
 
         # Posted Date
         # Look for "2d ago" etc.

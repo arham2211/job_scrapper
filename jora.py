@@ -78,7 +78,7 @@ def parse_new_site(html):
     job["max_annual_salary"] = max_sal
     
     job["work_type"] = ", ".join(work_types) if work_types else None
-    job["classification"] = None  # Jora doesn't easily expose this in the same way
+    # job["classification"] = None  # REMOVED
 
     # Posted date
     posted_el = soup.select_one("#job-meta .listed-date")
@@ -92,12 +92,15 @@ def parse_new_site(html):
         lines = [line.strip() for line in text.split("\n") if line.strip()]
         job["job_description"] = "\n".join(lines)
         
-        # Simple extraction for remote/hybrid from description if needed
-        desc_lower = job["job_description"].lower()
-        if "remote" in desc_lower:
-            job["is_remote"] = True
-        if "hybrid" in desc_lower or "hybrid" in (job["work_type"] or "").lower():
-            job["is_hybrid"] = True
+        
+        # Simple extraction for remote/hybrid from TITLE as requested
+        # Check title if available
+        if job["job_title"]:
+            title_lower = job["job_title"].lower()
+            if "remote" in title_lower:
+                job["is_remote"] = True
+            if "hybrid" in title_lower:
+                job["is_hybrid"] = True
     else:
         job["job_description"] = None
 
@@ -108,7 +111,7 @@ def parse_new_site(html):
 # SCRAPER PIPELINE
 # -----------------------------------------
 
-base_url = "https://au.jora.com/jobs-in-Berwick-VIC?sp=browse"
+base_url = "https://au.jora.com/j?sp=homepage&trigger_source=homepage&q=&l="
 
 driver = Driver(uc=True, headless=True)
 
