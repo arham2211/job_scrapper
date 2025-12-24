@@ -62,19 +62,14 @@ def extract_job_details(html):
 # MASTER PIPELINE
 # =======================================
 
-BASE_URL = "https://www.seek.com.au/jobs?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260"
+BASE_URL = "https://www.seek.com.au/jobs/in-Brisbane-QLD-4000?classification=6251%2C1200%2C6304%2C1203%2C1204%2C1225%2C6246%2C6261%2C1223%2C6362%2C6043%2C1220%2C6058%2C6008%2C6092%2C1216%2C1214%2C6281%2C6317%2C1212%2C1211%2C1210%2C6205%2C1209%2C6123%2C6263%2C6076%2C1206%2C6163%2C7019&subclassification=6252%2C6253%2C6254%2C6255%2C6256%2C6257%2C6258%2C6259%2C6260"
 
-# Check if running in CI environment
-import os
-is_ci = os.getenv("GITHUB_ACTIONS") == "true"
-
-# In CI/Xvfb, running headless=False usually works better for undetected-chromedriver
-driver = Driver(uc=True, headless=not is_ci)
+driver = Driver(uc=True, headless=True)
 
 job_urls = []
 
 # Iterate through pages 1-20
-for page_num in range(1, 3):
+for page_num in range(1, 2):
     if page_num == 1:
         listing_url = BASE_URL
     else:
