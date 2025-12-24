@@ -46,21 +46,40 @@ def ingest_data():
     # 2. Load Data
     seek_file = "output/seek/seek_jobs.json"
     jobsearch_file = "output/jobsearch/jobsearch_jobs.json"
+    jora_file = "output/jora/jora_jobs.json"
+    career_file = "output/career/career_jobs.json"
     
     seek_data = load_json_file(seek_file)
     jobsearch_data = load_json_file(jobsearch_file)
+    jora_data = load_json_file(jora_file)
+    career_data = load_json_file(career_file)
     
     # Add source tag
     for job in seek_data:
         job['source'] = 'seek'
     for job in jobsearch_data:
         job['source'] = 'jobsearch'
+    for job in jora_data:
+        job['source'] = 'jora'
+    for job in career_data:
+        job['source'] = 'careerone'
         
-    all_jobs = seek_data + jobsearch_data
+    all_jobs = seek_data + jobsearch_data + jora_data + career_data
     
     if not all_jobs:
         logger.warning("No jobs found to ingest.")
         return
+
+    # Deduplicate by URL to prevent UniqueViolation within the same transaction
+    unique_jobs = {}
+    for job in all_jobs:
+        url = job.get('url')
+        if url:
+             # Later entries overwrite earlier ones (e.g. if sources overlap, or just duplicates in list)
+             unique_jobs[url] = job
+    
+    all_jobs = list(unique_jobs.values())
+    logger.info(f"Deduplicated jobs. Unique count: {len(all_jobs)}")
 
     db = SessionLocal()
     try:
