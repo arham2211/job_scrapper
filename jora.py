@@ -114,6 +114,9 @@ def parse_new_site(html):
 base_url = "https://au.jora.com/j?sp=homepage&trigger_source=homepage&q=&l="
 
 driver = Driver(uc=True, headless=True)
+import os
+is_ci = os.getenv("GITHUB_ACTIONS") == "true"
+driver = Driver(uc=True, headless=not is_ci)
 
 job_urls = []
 

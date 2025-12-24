@@ -27,6 +27,8 @@ jobs:
       
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
@@ -37,7 +39,7 @@ jobs:
       
       - name: Run job scrapers
         run: |
-          python run_scrapers.py
+          xvfb-run --auto-servernum python run_scrapers.py
         continue-on-error: false
         # This runs both scrapers in parallel:
         # - seek.py: Scrapes 20 pages from Seek

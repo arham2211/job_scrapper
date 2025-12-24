@@ -6,7 +6,10 @@ import os
 from utils import parse_salary, parse_posted_date, parse_location
 import re
 
-driver = Driver(uc=True)
+# Check if running in CI environment
+is_ci = os.getenv("GITHUB_ACTIONS") == "true"
+
+driver = Driver(uc=True, headless=not is_ci)
 
 base_url = "https://www.jobsearch.com.au/jobs"
 base_url_2 = "https://www.jobsearch.com.au/jobs?q=remote"

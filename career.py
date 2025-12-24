@@ -7,7 +7,9 @@ import re
 from utils import parse_posted_date, parse_location, parse_salary
 
 # Initialize the driver
-driver = Driver(uc=True, headless=True)
+import os
+is_ci = os.getenv("GITHUB_ACTIONS") == "true"
+driver = Driver(uc=True, headless=not is_ci)
 
 url = "https://www.careerone.com.au/jobs/in-australia"
 
